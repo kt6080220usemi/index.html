@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="UltraLock">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2933/2933942.png">
+    <title>UltraLock - Đức Khanh</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #040b14;
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: radial-gradient(circle at top, #0a1f33 0%, #040b14 80%);
+            padding-top: env(safe-area-inset-top, 40px);
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+            overflow: hidden;
+        }
+
+        /* --- MÀN HÌNH NHẬP KEY --- */
+        #login-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0; left: 0;
+            background: #040b14;
+            z-index: 999;
+        }
+        .login-box {
+            background: rgba(10, 25, 40, 0.9);
+            border: 1px solid rgba(0, 210, 255, 0.5);
+            padding: 30px 20px;
+            border-radius: 20px;
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
+        }
+        .login-box h2 { color: #00d2ff; margin-bottom: 20px; font-size: 22px; }
+        .login-box input {
+            width: 100%; padding: 15px; border-radius: 10px;
+            border: 1px solid #00d2ff; background: #06101e;
+            color: white; font-size: 16px; text-align: center;
+            margin-bottom: 20px; outline: none;
+        }
+        .login-box button {
+            width: 100%; padding: 15px; border-radius: 10px;
+            border: none; background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            color: white; font-size: 16px; font-weight: bold; cursor: pointer;
+        }
+
+        /* --- GIAO DIỆN CHÍNH --- */
+        #main-app { display: none; flex-direction: column; align-items: center; width: 100%; height: 100%; }
+
+        /* Thanh Tabs Home / Function */
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 30px;
+            padding: 5px;
+            width: 90%;
+            max-width: 350px;
+            margin-top: 10px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            flex-shrink: 0;
+        }
+        .tab {
+            flex: 1; text-align: center; padding: 12px 0;
+            border-radius: 25px; font-weight: 700;
+            color: #8892b0; font-size: 15px; transition: 0.3s;
+        }
+        .tab.active {
+            background: linear-gradient(90deg, #00d2ff, #8b5cf6);
+            color: white;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+        }
+
+        .content {
+            width: 100%; height: 100%; overflow-y: auto;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 0 15px 50px 15px;
+        }
+
+        /* Khung viền đứt nét bao quanh */
+        .panel-container {
+            width: 100%; max-width: 400px;
+            border: 1.5px dashed rgba(0, 210, 255, 0.3);
+            border-radius: 25px; padding: 15px;
+            display: flex; flex-direction: column; gap: 15px;
+            background: rgba(4, 11, 20, 0.5);
+        }
+
+        .panel {
+            width: 100%;
+            background: linear-gradient(145deg, #071322, #0a1c33);
+            border: 1.5px solid rgba(0, 210, 255, 0.4);
+            border-radius: 18px; padding: 18px 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0,210,255,0.05);
+            position: relative;
+        }
+
+        .feature-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .feature-title { font-size: 17px; font-weight: 800; letter-spacing: 1px; color: #e2e8f0; text-shadow: 0 0 8px rgba(255,255,255,0.3); }
+        
+        /* Nút gạt */
+        .toggle-wrapper { display: flex; align-items: center; gap: 12px; }
+        .status-text { font-size: 14px; font-weight: 600; color: #ff4d4d; }
+        .status-text.active { color: #00ff88; }
+        
+        .toggle {
+            position: relative;
+            width: 55px; height: 30px;
+            background: #141e2d;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 2px solid #ff4d4d;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 0 10px rgba(255,77,77,0.2);
+        }
+        .toggle.active { 
+            background: #00d2ff; 
+            border-color: #00d2ff;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2), 0 0 15px rgba(0, 210, 255, 0.6); 
+        }
+        
+        .toggle-knob {
+            position: absolute; top: 1px; left: 2px;
+            width: 24px; height: 24px;
+            background: white; border-radius: 50%;
+            transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+        .toggle.active .toggle-knob { transform: translateX(24px); }
+
+        .feature-sub { color: #00d2ff; font-size: 14px; display: flex; align-items: center; gap: 8px; font-weight: 500; letter-spacing: 0.5px;}
+        .feature-sub::before { content: '✔'; font-weight: bold; font-size: 15px; text-shadow: 0 0 5px #00d2ff; }
+
+        /* Footer Bản quyền ĐỨC KHANH */
+        .footer { margin-top: 40px; margin-bottom: 30px; text-align: center; color: #a0aec0; font-size: 12px; letter-spacing: 1.5px; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <!-- MÀN HÌNH KHÓA BẰNG KEY -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>🔒 NHẬP KEY KÍCH HOẠT</h2>
+            <input type="text" id="key-input" placeholder="Nhập key tại đây...">
+            <button onclick="checkKey()">XÁC NHẬN</button>
+        </div>
+    </div>
+
+    <!-- GIAO DIỆN CHÍNH -->
+    <div id="main-app">
+        <div class="tabs">
+            <div class="tab" onclick="switchTab(this, 'home')">Home</div>
+            <div class="tab active" onclick="switchTab(this, 'function')">Function</div>
+        </div>
+
+        <div class="content" id="home-tab">
+            <div class="panel-container">
+                <!-- STADY HOLD -->
+                <div class="panel">
+                    <div class="feature-row">
+                        <div class="feature-title">STADY HOLD</div>
+                        <div class="toggle-wrapper">
+                            <span class="status-text" id="txt-stady">OFF</span>
+                            <div class="toggle" onclick="toggleBtn(this, 'txt-stady')">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-sub">Đầm Tâm</div>
+                </div>
+
+                <!-- ANCHOR AIM -->
+                <div class="panel">
+                    <div class="feature-row">
+                        <div class="feature-title">ANCHOR AIM</div>
+                        <div class="toggle-wrapper">
+                            <span class="status-text" id="txt-anchor">OFF</span>
+                            <div class="toggle" onclick="toggleBtn(this, 'txt-anchor')">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-sub">Ghìm Tâm</div>
+                </div>
+
+                <!-- SHAKE FIX -->
+                <div class="panel">
+                    <div class="feature-row">
+                        <div class="feature-title">SHAKE FIX</div>
+                        <div class="toggle-wrapper">
+                            <span class="status-text" id="txt-shake">OFF</span>
+                            <div class="toggle" onclick="toggleBtn(this, 'txt-shake')">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-sub">Fix Rung Tâm</div>
+                </div>
+
+                <!-- DRIFT FIX -->
+                <div class="panel">
+                    <div class="feature-row">
+                        <div class="feature-title">DRIFT FIX</div>
+                        <div class="toggle-wrapper">
+                            <span class="status-text" id="txt-drift">OFF</span>
+                            <div class="toggle" onclick="toggleBtn(this, 'txt-drift')">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-sub">Fix Lạc Đạn</div>
+                </div>
+
+                <!-- HEAD FIX -->
+                <div class="panel">
+                    <div class="feature-row">
+                        <div class="feature-title">HEAD FIX</div>
+                        <div class="toggle-wrapper">
+                            <span class="status-text" id="txt-head">OFF</span>
+                            <div class="toggle" onclick="toggleBtn(this, 'txt-head')">
+                                <div class="toggle-knob"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="feature-sub">Fix Lỗ Đầu</div>
+                </div>
+            </div>
+
+            <!-- BẢN QUYỀN ĐỨC KHANH THEO ĐÚNG YÊU CẦU -->
+            <div class="footer">
+                © 2026 BẢN QUYỀN ĐỨC KHANH
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // KIỂM TRA KEY (Mặc định: DucKhanh2026)
+        function checkKey() {
+            var inputKey = document.getElementById('key-input').value;
+            var correctKey = "DucKhanh2026"; 
+
+            if (inputKey === correctKey) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'flex';
+            } else {
+                alert("❌ Key không hợp lệ. Vui lòng thử lại!");
+            }
+        }
+
+        // HIỆU ỨNG BẬT TẮT
+        function toggleBtn(element, textId) {
+            element.classList.toggle('active');
+            var textElement = document.getElementById(textId);
+            
+            if (element.classList.contains('active')) {
+                textElement.innerText = 'ON';
+                textElement.classList.add('active');
+            } else {
+                textElement.innerText = 'OFF';
+                textElement.classList.remove('active');
+            }
+
+            if(navigator.vibrate) navigator.vibrate(30);
+        }
+
+        function switchTab(tabElement, tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tabElement.classList.add('active');
+        }
+    </script>
+</body>
+</html>
